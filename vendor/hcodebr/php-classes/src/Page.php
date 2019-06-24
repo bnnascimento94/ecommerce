@@ -8,12 +8,12 @@ class Page{
 	private $defaults = [
 		"data"=>[]
 	]; 
-	public function __construct($opts = array()){
+	public function __construct($opts = array(), $tlp_dir = "/views/"){
 	    // config
 		
 		$this->options = array_merge($this->defaults,$opts); //se for igual os dados de defaults e options o que vem de options sobrescreve, se tiver diferencas entre eles um complementa o outro.
 		$config = array(
-			"tpl_dir"       =>$_SERVER["DOCUMENT_ROOT"]. "/views/",
+			"tpl_dir"       =>$_SERVER["DOCUMENT_ROOT"].$tlp_dir,
 			"cache_dir"     => $_SERVER["DOCUMENT_ROOT"]."/views-cache/",
 			"debug" => false
 		);
