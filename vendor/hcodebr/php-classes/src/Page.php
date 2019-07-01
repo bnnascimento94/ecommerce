@@ -6,11 +6,11 @@ class Page{
 	private $tpl;
 	private $options =[]; //nesta variavel há todos os dados que serão exibidos pelo template.
 	private $defaults = [
+		"header"=> true,
+		"footer"=> true,
 		"data"=>[]
 	]; 
-	public function __construct($opts = array(), $tlp_dir = "/views/"){
-	    // config
-		
+	public function __construct($opts = array(), $tlp_dir = "/views/"){		
 		$this->options = array_merge($this->defaults,$opts); //se for igual os dados de defaults e options o que vem de options sobrescreve, se tiver diferencas entre eles um complementa o outro.
 		$config = array(
 			"tpl_dir"       =>$_SERVER["DOCUMENT_ROOT"].$tlp_dir,
@@ -21,7 +21,7 @@ class Page{
 		$this->tpl = new Tpl;
 		
 		$this->setData($this->options["data"]);
-		$this->tpl->draw("header");
+		if($this->options["header"]==true)$this->tpl->draw("header");
 		
 	}
 	
@@ -38,7 +38,7 @@ class Page{
 	}
 	
 	public function __destruct(){
-		$this->tpl->draw("footer");
+		if($this->options["footer"]==true) $this->tpl->draw("footer");
 	}
 }
 ?>
