@@ -16,6 +16,39 @@ class User extends Model {
 	protected $fields = [
 		"iduser", "idperson", "deslogin", "despassword", "inadmin", "dtergister"
 	];
+	
+	
+	public static function getFromSession(){
+		$user = new User();
+		if(isset($_SESSION[User::SESSION]) && (int) $_SESSION[User::SESSION]['iduser']>0){
+			$user->setData($_SESSION[User::SESSION]);
+		}
+		return $user;
+	}
+	
+	public static function checkLogin($inadmin = true){
+	    if (
+			!isset($_SESSION[User::SESSION])
+			|| 
+			!$_SESSION[User::SESSION]
+			||
+			!(int)$_SESSION[User::SESSION]["iduser"] > 0
+		){
+			//não está logado
+			return false;
+		}else{
+		//var_dump($_SESSION[User::SESSION]);
+			//pergunta se o usuario faz parte da rota da administração
+			if($inadmin ===true &&  (bool)$_SESSION[User::SESSION]['inadmin']===true ){
+				return true;
+			} 
+			else if($inadmin=== false){
+				return true;
+			}else{
+				return false;
+			}
+		}
+	}
 
 	public static function login($login, $password):User
 	{
@@ -30,13 +63,12 @@ class User extends Model {
 			throw new \Exception("Não foi possível fazer login.");
 		}
 		$data = $results[0];
+		var_dump($password);
 		if (password_verify($password, $data['despassword'])) {
 
 			$user = new User();
 			$user->setData($data);
-
 			$_SESSION[User::SESSION] = $user->getValues();
-
 			return $user;
 
 		} else {
@@ -57,18 +89,11 @@ class User extends Model {
 	public static function verifyLogin($inadmin = true)
 	{
 
-		if (
-			!isset($_SESSION[User::SESSION])
-			|| 
-			!$_SESSION[User::SESSION]
-			||
-			!(int)$_SESSION[User::SESSION]["iduser"] > 0
-			||
-			(bool)$_SESSION[User::SESSION]["iduser"] !== $inadmin
-		) {
+		if (User::checkLogin($inadmin)) {
 			
-			header("Location: /admin/login");
-			exit;
+			//header("Location: /admin");
+			//exit;
+			return true;
 
 		}
 
@@ -141,7 +166,6 @@ class User extends Model {
 		    //var_dump($data);
 			$values = $data[0];
 			$idrecovery = openssl_decrypt($code, User::CIPHER, User::SECRET, $options=0, $values['iv_encrypt'],$values['tag_encrypt']);
-			var_dump($idrecovery);
 			$results = $sql->select("
 			SELECT *
 				FROM tb_userspasswordsrecoveries a 
