@@ -69,7 +69,6 @@ class Cart extends Model{
 	
 	public function save(){
 		$sql = new Sql();
-		var_dump($this->getValues());
         $results = $sql->select("CALL sp_carts_save(:idcart,:dessessionid, :iduser, :deszipcode,:vlfreight,:nrdays)", [
             ':idcart' => $this->getidcart(),
             ':dessessionid' => $this->getdessessionid(),
@@ -79,6 +78,53 @@ class Cart extends Model{
             ':nrdays' => $this->getnrdays(),
         ]);
 		$this->setData($results[0]);
+	}
+	
+	public function addProduct(Product $product){
+		$sql = new Sql();
+			//var_dump($this->getvalues()['idcart']);
+			//var_dump($product->getidproduct());
+			//exit;
+		
+		$row = $sql->query("Insert into tb_cartsproducts(idcart, idproduct) values (:idcart, :idproduct)",[
+			":idcart"=>$this->getvalues()['idcart'],
+			":idproduct"=>$product->getidproduct()
+		]);
+	
+	}
+	
+	public function removeProduct(Product $product, $all= false){
+	$sql = new Sql();
+		if($all){
+			$sql->query("Update tb_cartsproducts set dtremoved = now() where idcart = :idcart and idproduct = :idproduct",[
+				//":idcart"=>$this->getidcart(),
+				":idcart"=>$this->getvalues()['idcart'],
+				":idproduct"=>$product ->getidproduct()
+			]);
+		
+		}else{
+			$sql->query("Update tb_cartsproducts set dtremoved = now() where idcart = :idcart and idproduct = :idproduct and dtremoved is null LIMIT 1",[
+				":idcart"=>$this->getvalues()['idcart'],
+				//":idcart"=>$this->getidcart(),
+				":idproduct"=>$product ->getidproduct()
+			]);
+		
+		}
+		
+	
+	}
+	
+	public function getProducts(){
+		$sql = new Sql();
+		//var_dump($this->getidcart());
+		$rows = $sql->select("select b.idproduct, b.desproduct, b.vlprice, b.vlwidth, b.vlheight,b.vllength, b.vlweight,b.desurl, count(*) as nrqtd, sum(vlprice) as vltotal from tb_cartsproducts a INNER JOIN tb_products b on a.idproduct = b.idproduct where a.idcart = :idcart and dtremoved is null group by b.idproduct, b.desproduct, b.vlprice, b.vlwidth, b.vlheight,b.vllength, b.vlweight, b.desurl order by b.desproduct",[
+		
+			":idcart"=>$this->getvalues()['idcart']
+		
+		]);
+		
+		return Product::checkList($rows);
+	
 	}
 	
 	
